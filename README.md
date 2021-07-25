@@ -1,10 +1,13 @@
 # Digital Ocean NKN Wallet Archiver
 
-A script to backup my NKN wallets from VPS hosted in Digital Ocean.
+A script to backup my NKN wallets from VPS hosted in Digital Ocean. It downloads `wallet.json` and `wallet.pswd` via SSH
+and. The script can be configured to delete the droplets upon deletion.
 
-## Installation
+## Requirements
 
-The script assumes that your SSH client is configured to access droplets via SSH:
+1. Ruby
+2. Bundler
+3. An SSH client configured to access droplets via SSH:
 
 ```
 # ~/.ssh/config
@@ -22,6 +25,8 @@ Host nkn-commercial-ubuntu-s-1vcpu-1gb-sgp1-02 # name of the droplet
 
 # ...
 ```
+
+## Installation
 
 1. Create an `Access Token` with `Write` permissions [in Digital Ocean](https://cloud.digitalocean.com/account/api/tokens)
 2. Create an `.env`file with the contents `ACCESS_TOKEN=your-digital-ocean-access-token`
