@@ -10,6 +10,7 @@ Dotenv.require_keys('ACCESS_TOKEN', 'SSH_USERNAME')
 
 ACCESS_TOKEN = ENV.fetch('ACCESS_TOKEN')
 SSH_USERNAME = ENV.fetch('SSH_USERNAME')
+BACKUP_DIRECTORY = 'backups'
 
 client = DropletKit::Client.new(access_token: ACCESS_TOKEN)
 droplets = client.droplets.all.sort_by(&:name)
@@ -17,16 +18,22 @@ droplets = client.droplets.all.sort_by(&:name)
 # Colors the output
 pastel = Pastel.new
 
+# Ensure that the folder where the backups folder exists
+Dir.mkdir(BACKUP_DIRECTORY) unless Dir.exist?(BACKUP_DIRECTORY)
+
 droplets_backed_up, droplets_not_backed_up = droplets.partition do |droplet|
-  unless File.exist?("backups/#{droplet.name}-wallet.json")
-    `ssh #{SSH_USERNAME}@#{droplet.name} cat /home/nkn/nkn-commercial/services/nkn-node/wallet.json > backups/#{droplet.name}-wallet.json`
+  wallet_filename   = "BACKUP_DIRECTORY/#{droplet.name}-wallet.json"
+  password_filename = "BACKUP_DIRECTORY/#{droplet.name}-wallet.pswd"
+
+  unless File.exist?(wallet_filename)
+    `ssh #{SSH_USERNAME}@#{droplet.name} cat /home/nkn/nkn-commercial/services/nkn-node/wallet.json > #{wallet_filename}`
   end
 
-  unless File.exist?("backups/#{droplet.name}-wallet.pswd")
-    `ssh #{SSH_USERNAME}@#{droplet.name} cat /home/nkn/nkn-commercial/services/nkn-node/wallet.pswd > backups/#{droplet.name}-wallet.pswd`
+  unless File.exist?(password_filename)
+    `ssh #{SSH_USERNAME}@#{droplet.name} cat /home/nkn/nkn-commercial/services/nkn-node/wallet.pswd > #{password_filename}`
   end
 
-  if File.size?("backups/#{droplet.name}-wallet.json") > 200 && File.size("backups/#{droplet.name}-wallet.pswd") > 20
+  if File.size?(wallet_filename) > 200 && File.size(password_filename) > 20
     puts pastel.green("#{droplet.name} backed up")
     true
   else
